@@ -61,7 +61,7 @@ const EnrollPage = ({ userId, enrollableLessons, enrollLesson }) => {
     <Container className="d-flex flex-column">
       <div className="d-flex flex-row justify-content-around">
         <div className="d-flex flex-column">
-          <div className="mb-5 pt-3">
+          <div className="mb-5">
             <h3>Enroll in a new lesson</h3>
             <div>
               {enrollableLessons.map((lesson) => (

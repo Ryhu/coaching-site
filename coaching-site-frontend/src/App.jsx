@@ -136,11 +136,12 @@ function App() {
       })
       .then((res) => {
         console.log("lessons are:", res);
-        if (typeof res == "object") {
+
+        if (Array.isArray(res)) {
+          sortLessons(res);
+        } else {
           filterEnrollables(res.enrollable_lessons);
           sortLessons(res["lessons"]);
-        } else {
-          sortLessons(res);
         }
       });
   };
@@ -184,7 +185,7 @@ function App() {
     <>
       <Navbar expand="lg" className="bg-body-tertiary">
         <Container>
-          <Navbar.Brand href="#home">React-Bootstrap</Navbar.Brand>
+          <Navbar.Brand href="#home">Coaching-Site</Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Nav className="me-auto">
             <Navbar.Text className="me-3" onClick={() => setPage("upcoming")}>
