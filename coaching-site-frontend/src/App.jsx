@@ -4,7 +4,6 @@ import "react-calendar/dist/Calendar.css";
 // import { Route, BrowserRouter as Router} from "react-router-dom"
 import { BrowserRouter, Routes, Route, Outlet, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import Layout from "./components/Layout";
 import Login from "./components/LoginPage";
 import UpcomingPage from "./components/UpcomingPage";
 import FinishedPage from "./components/FinishedPage";
