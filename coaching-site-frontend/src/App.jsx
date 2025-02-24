@@ -53,6 +53,7 @@ function App() {
   const [finishedLessons, setFinishedLessons] = useState([]);
   const [lessonsToGrade, setLessonsToGrade] = useState([]);
   const [allLessons, setAllLessons] = useState([]);
+  const [enrollableLessons, setEnrollableLessons] = useState([]);
 
   const [user, setUser] = useState(DEFAULT_USER);
   const [page, setPage] = useState("upcoming");
@@ -76,6 +77,22 @@ function App() {
       ? `http://localhost:3000/coach/${userId}/lessons`
       : `http://localhost:3000/student/${userId}/lessons`;
 
+  let lessonToEditUrl = (lessonToEdit) =>
+    `http://localhost:3000/lesson/${lessonToEdit}`;
+
+  const filterEnrollables = (enrollables) => {
+    const dateNow = new Date();
+
+    const enrollableLessonsTemp = (enrollables || []).filter((enrollable) => {
+      const enrollableDate = new Date(
+        `${enrollable.date} ${enrollable.time}:00`
+      );
+      return enrollableDate > dateNow;
+    });
+
+    setEnrollableLessons(enrollableLessonsTemp);
+  };
+
   const sortLessons = (lessons) => {
     let oldLessons = [];
     let newLessons = [];
@@ -89,9 +106,11 @@ function App() {
         newLessons.push(lesson);
       } else {
         if (user.type === "coach") {
-          lesson.score
-            ? oldLessons.push(lesson)
-            : unfinishedLessons.push(lesson);
+          if (lesson.student != null) {
+            lesson.score
+              ? oldLessons.push(lesson)
+              : unfinishedLessons.push(lesson);
+          }
         } else {
           oldLessons.push(lesson);
         }
@@ -117,8 +136,48 @@ function App() {
       })
       .then((res) => {
         console.log("lessons are:", res);
-        sortLessons(res);
+        if (typeof res == "object") {
+          filterEnrollables(res.enrollable_lessons);
+          sortLessons(res["lessons"]);
+        } else {
+          sortLessons(res);
+        }
       });
+  };
+
+  const enrollLesson = (body, lessonId) => {
+    console.log("enroll body is", body);
+    fetch(lessonToEditUrl(lessonId), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    })
+      .then((response) => {
+        if (response.ok) {
+          refreshLessons(body.lesson.student_id, "student");
+          return response.json();
+        }
+        throw new Error("Network response was not ok.");
+      })
+      .catch((error) => console.log(error.message));
+  };
+
+  const createLesson = (body) => {
+    fetch(`http://localhost:3000/lessons`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }).then((response) => {
+      if (response.ok) {
+        refreshLessons(coachId, "coach");
+        return response.json();
+      }
+      throw new Error("Network response was not ok.");
+    });
   };
 
   return (
@@ -172,10 +231,14 @@ function App() {
           />
         )}
         {page == "evaluate" && (
-          <EvaluatePage userType={user.type} lessonsToGrade={lessonsToGrade} />
+          <EvaluatePage userId={user.id} lessonsToGrade={lessonsToGrade} />
         )}
         {page == "enroll" && (
-          <EnrollPage userType={user.type} lessonsToGrade={lessonsToGrade} />
+          <EnrollPage
+            userId={user.id}
+            enrollableLessons={enrollableLessons}
+            enrollLesson={enrollLesson}
+          />
         )}
         {page == "create" && (
           <CreatePage
