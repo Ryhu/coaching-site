@@ -25,7 +25,6 @@ const LoginPage = ({ updateUser }) => {
         throw new Error("Network response was not ok.");
       })
       .then((res) => {
-        console.log("students are", res);
         setStudents(res);
       });
   }, []);

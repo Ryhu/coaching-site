@@ -93,19 +93,18 @@ function App() {
     setEnrollableLessons(enrollableLessonsTemp);
   };
 
-  const sortLessons = (lessons) => {
+  const sortLessons = (lessons, userType) => {
     let oldLessons = [];
     let newLessons = [];
     let unfinishedLessons = [];
     const dateNow = new Date();
-
     lessons.forEach((lesson) => {
       const lessonDate = new Date(`${lesson.date} ${lesson.time}:00`);
 
       if (lessonDate > dateNow) {
         newLessons.push(lesson);
       } else {
-        if (user.type === "coach") {
+        if (userType === "coach") {
           if (lesson.student != null) {
             lesson.score
               ? oldLessons.push(lesson)
@@ -122,7 +121,6 @@ function App() {
     setFinishedLessons(oldLessons);
     setLessonsToGrade(unfinishedLessons);
 
-    console.log();
     setPage("upcoming");
   };
 
@@ -135,34 +133,45 @@ function App() {
         throw new Error("Network response was not ok.");
       })
       .then((res) => {
-        console.log("lessons are:", res);
-
         if (Array.isArray(res)) {
-          sortLessons(res);
+          sortLessons(res, "coach");
         } else {
           filterEnrollables(res.enrollable_lessons);
-          sortLessons(res["lessons"]);
+          sortLessons(res["lessons"], "student");
         }
       });
   };
 
   const enrollLesson = (body, lessonId) => {
-    console.log("enroll body is", body);
     fetch(lessonToEditUrl(lessonId), {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),
-    })
-      .then((response) => {
-        if (response.ok) {
-          refreshLessons(body.lesson.student_id, "student");
-          return response.json();
-        }
-        throw new Error("Network response was not ok.");
-      })
-      .catch((error) => console.log(error.message));
+    }).then((response) => {
+      if (response.ok) {
+        refreshLessons(body.lesson.student_id, "student");
+        return response.json();
+      }
+      throw new Error("Network response was not ok.");
+    });
+  };
+
+  const evaluateLesson = (body, lessonId, coachId) => {
+    fetch(lessonToEditUrl(lessonId), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    }).then((response) => {
+      if (response.ok) {
+        refreshLessons(coachId, "coach");
+        return response.json();
+      }
+      throw new Error("Network response was not ok.");
+    });
   };
 
   const createLesson = (body) => {
@@ -232,7 +241,11 @@ function App() {
           />
         )}
         {page == "evaluate" && (
-          <EvaluatePage userId={user.id} lessonsToGrade={lessonsToGrade} />
+          <EvaluatePage
+            userId={user.id}
+            lessonsToGrade={lessonsToGrade}
+            evaluateLesson={evaluateLesson}
+          />
         )}
         {page == "enroll" && (
           <EnrollPage
