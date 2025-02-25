@@ -6,10 +6,9 @@ import { timeTranslator } from "./Tools";
 const EnrollPage = ({ userId, enrollableLessons, enrollLesson }) => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [lessonToEdit, setLessonToEdit] = useState();
-  const handleClose = () => setShowEditModal(false);
 
   const lessonEditModal = (
-    <Modal show={showEditModal} onHide={handleClose}>
+    <Modal show={showEditModal} onHide={() => setShowEditModal(false)}>
       <Modal.Header closeButton>
         <Modal.Title>Enroll in this lesson?</Modal.Title>
       </Modal.Header>
@@ -25,7 +24,7 @@ const EnrollPage = ({ userId, enrollableLessons, enrollLesson }) => {
                   {lessonToEdit.date + " " + timeTranslator[lessonToEdit.time]}
                 </Card.Subtitle>
                 <div>
-                  <p className="mb-0">{`Coach: ${lessonToEdit.coach.firstName} ${lessonToEdit.coach.lastName}`}</p>
+                  <p className="mb-0">{`Coach: ${lessonToEdit.coach.first_name} ${lessonToEdit.coach.last_name}`}</p>
                   <p>{`Coach Introduction: ${lessonToEdit.coach.introduction}`}</p>
                   <p>{lessonToEdit.description}</p>
                 </div>
@@ -35,7 +34,7 @@ const EnrollPage = ({ userId, enrollableLessons, enrollLesson }) => {
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button variant="secondary" onClick={() => setShowEditModal(false)}>
           Close
         </Button>
         <Button
@@ -49,7 +48,7 @@ const EnrollPage = ({ userId, enrollableLessons, enrollLesson }) => {
               },
               `${lessonToEdit.id}`
             );
-            handleClose();
+            setShowEditModal(false);
           }}>
           Enroll
         </Button>
@@ -79,7 +78,7 @@ const EnrollPage = ({ userId, enrollableLessons, enrollLesson }) => {
                       {lesson.date + " " + timeTranslator[lesson.time]}
                     </Card.Subtitle>
                     <div>
-                      <p className="mb-0">{`Coach: ${lesson.coach.firstName} ${lesson.coach.lastName}`}</p>
+                      <p className="mb-0">{`Coach: ${lesson.coach.first_name} ${lesson.coach.last_name}`}</p>
                       <p>{`Coach Introduction: ${lesson.coach.introduction}`}</p>
                       <p>{lesson.description}</p>
                       {lesson.coach && (
